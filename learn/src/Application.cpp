@@ -46,7 +46,7 @@ void Application::Run() {
 void Application::Update() {
 	// update first Collider to mouse position
 	sf::Vector2i mousePos = sf::Mouse::getPosition(Window);
-	m_Colliders[currentCollider]->setPosition(mousePos.x, mousePos.y);
+	m_Colliders[currentCollider]->setPosition(sf::Vector2f(mousePos.x, mousePos.y));
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		m_Colliders[currentCollider]->setRotation(m_Colliders[currentCollider]->getRotation() + 100.0f * dt);
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
@@ -60,6 +60,8 @@ void Application::Render() {
 
 	for (auto c : m_Colliders)
 		Window.draw(*c);
+	
+	Window.draw(*testCollider);
 }
 
 void Application::HandleEvents() {
@@ -94,6 +96,21 @@ void Application::CheckCollisions() {
 }
 
 void Application::CreateColliders() {
+	{
+		//Collider* c = new Collider(4);
+	}
+	{
+		BoxCollider* c = new BoxCollider();
+
+		c->Create(sf::Vector2f(300.0f, 200.0f));
+
+		c->SetPosition(sf::Vector2f(120.0f, 560.0f));
+
+		c->SetRotation(25.0f);
+
+		testCollider = c;
+
+	}
 	{
 		CustomCollider* c = new CustomCollider();
 		c->setPointCount(5);

@@ -21,8 +21,9 @@ private:
 	sf::Clock m_dtClock;
 
 	std::vector<CustomCollider*> m_Colliders;
+	BoxCollider* testCollider;
 
-	int currentCollider=0;
+	int currentCollider = 0;
 
 	void Update();
 	void Render();
