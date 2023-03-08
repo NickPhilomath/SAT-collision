@@ -3,6 +3,18 @@
 constexpr float PI      = 3.14159265f;
 constexpr float DEG2RAD = 3.14159f / 180.0f;
 
+//sf::Vector2f getGlobalPosition(sf::Vector2f localCoors, sf::Vector2f position, float rotation) {
+//    float sinA = sin(rotation * DEG2RAD), cosA = cos(rotation * DEG2RAD);
+//    sf::Vector2f l(localCoors.x * cosA - localCoors.y * sinA, localCoors.y * cosA + localCoors.x * sinA);
+//    return position + l;
+//}
+
+template <typename T>
+inline float PointToLine(sf::Vector2<T> point, sf::Vector2<T> line1, sf::Vector2<T> line2) {
+	float h = line2.y - line1.y, s = line2.x - line1.x;
+	return -((s * (point.y - line1.y) - h * (point.x - line1.x)) / sqrt(s * s + h * h));
+}
+
 template <typename T>
 inline float DotProduct(sf::Vector2<T> v0, sf::Vector2<T> v1) {
 	return v0.x * v1.x + v0.y * v1.y;
@@ -26,7 +38,6 @@ inline float Length(sf::Vector2<T> v) {
 template <typename T>
 static sf::Vector2<T> Normalize(sf::Vector2<T> v) {
 	float length = Length(v);
-
 	return length ? v / length : sf::Vector2<T>();
 }
 

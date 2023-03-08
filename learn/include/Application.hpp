@@ -20,8 +20,7 @@ public:
 private:
 	sf::Clock m_dtClock;
 
-	std::vector<CustomCollider*> m_Colliders;
-	BoxCollider* testCollider;
+	std::vector<Collider*> m_Colliders;
 
 	int currentCollider = 0;
 

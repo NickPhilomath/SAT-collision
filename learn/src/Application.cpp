@@ -22,16 +22,14 @@ void Application::Run() {
 	while (Window.isOpen()) {
 		HandleEvents();
 		Update();
+
 		sf::Image image;
 		image.create(20, 20, sf::Color::Yellow);
 		image.setPixel(19, 19, sf::Color::Red);
-
 		sf::Texture texture;
 		texture.loadFromImage(image);
 		sf::Sprite sprite;
 		sprite.setTexture(texture, true);
-		
-
 		
 		Window.clear(sf::Color(13, 17, 31));
 		Render();
@@ -39,16 +37,17 @@ void Application::Run() {
 		Window.display();
 
 		DT = m_dtClock.restart().asSeconds();
-		std::cout << DT << std::endl;
+		//std::cout << DT << std::endl;
 	}
 }
 
 void Application::Update() {
 	// update first Collider to mouse position
 	sf::Vector2i mousePos = sf::Mouse::getPosition(Window);
-	m_Colliders[currentCollider]->setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+	m_Colliders[currentCollider]->SetPosition(sf::Vector2f(mousePos.x, mousePos.y));
+
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		m_Colliders[currentCollider]->setRotation(m_Colliders[currentCollider]->getRotation() + 100.0f * dt);
+		m_Colliders[currentCollider]->SetRotation(m_Colliders[currentCollider]->GetRotation() + 100.0f * dt);
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 		(currentCollider == m_Colliders.size() - 1) ? currentCollider = 0 : currentCollider += 1;
 
@@ -56,12 +55,10 @@ void Application::Update() {
 }
 
 void Application::Render() {
-	//std::cout << "wtf" << m_Colliders.size() << std::endl;
 
 	for (auto c : m_Colliders)
 		Window.draw(*c);
 	
-	Window.draw(*testCollider);
 }
 
 void Application::HandleEvents() {
@@ -83,60 +80,52 @@ void Application::InitWindow() {
 }
 
 void Application::CheckCollisions() {
-	//for (auto c : m_Colliders) {
-	//
-	//}
-	sf::Vector2f MTV;
-	if (Collision::Instance.SATCollision(*m_Colliders[0], *m_Colliders[1], MTV)) {
+	sf::Vector2f MPV;
+	if (Collision::Instance.SATCollision(*m_Colliders[0], *m_Colliders[1], MPV))
+		Print("collided");
+	else
+		Print("not collided");
+	Print("\n");
+	/*if () {
 		m_Colliders[1]->setFillColor(sf::Color::Red);
 	}
 	else {
 		m_Colliders[1]->setFillColor(sf::Color::Transparent);
-	}
+	}*/
 }
 
 void Application::CreateColliders() {
 	{
-		//Collider* c = new Collider(4);
+		CircleCollider* c = new CircleCollider();
+		c->Create(100.0f);
+		c->SetPosition(sf::Vector2f(650.0f, 250.0f));
+		m_Colliders.push_back(c);
 	}
 	{
 		BoxCollider* c = new BoxCollider();
-
-		c->Create(sf::Vector2f(300.0f, 200.0f));
-
-		c->SetPosition(sf::Vector2f(120.0f, 560.0f));
-
-		c->SetRotation(25.0f);
-
-		testCollider = c;
-
-	}
-	{
-		CustomCollider* c = new CustomCollider();
-		c->setPointCount(5);
-		c->setColliderPoint(0, sf::Vector2f(-30.f, -20.f));
-		c->setColliderPoint(1, sf::Vector2f(150.f, -10.f));
-		c->setColliderPoint(2, sf::Vector2f(120.f, 90.f));
-		c->setColliderPoint(3, sf::Vector2f(30.f, 100.f));
-		c->setColliderPoint(4, sf::Vector2f(0.f, 50.f));
-		c->setPosition(sf::Vector2f(150.f, 250.f));
-		//c->setRotation(15.f);
-		c->setFillColor(sf::Color::Transparent);
-		c->setOutlineThickness(1.f);
+		c->Create(sf::Vector2f(100.0f, 200.0f));
+		c->SetOrigin(sf::Vector2f(50.0f, 100.0f));
+		c->SetPosition(sf::Vector2f(50.0f, 50.0f));
+		//c->SetRotation(25.0f);
 		m_Colliders.push_back(c);
 	}
-
 	{
-		CustomCollider* c = new CustomCollider();
-		c->setPointCount(4);
-		c->setColliderPoint(0, sf::Vector2f(-50.f, -50.f));
-		c->setColliderPoint(1, sf::Vector2f(50.f, -50.f));
-		c->setColliderPoint(2, sf::Vector2f(50.f, 50.f));
-		c->setColliderPoint(3, sf::Vector2f(-50.f, 50.f));
-		c->setPosition(sf::Vector2f(200.f, 150.f));
-		//c->setRotation(45.f);
-		c->setFillColor(sf::Color::Transparent);
-		c->setOutlineThickness(1.f);
+		BoxCollider* c = new BoxCollider();
+		c->Create(sf::Vector2f(200.0f, 100.0f));
+		c->SetPosition(sf::Vector2f(200.0f, 100.0f));
+		//c->SetRotation(25.0f);
 		m_Colliders.push_back(c);
 	}
+	{
+		CustomCollider* c = new CustomCollider(6);
+		c->GetVertices(0) = sf::Vector2f(100.0f, 0.0f);
+		c->GetVertices(1) = sf::Vector2f(200.0f, 0.0f);
+		c->GetVertices(2) = sf::Vector2f(260.0f, 60.0f);
+		c->GetVertices(3) = sf::Vector2f(160.0f, 120.0f);
+		c->GetVertices(4) = sf::Vector2f(80.0f, 120.0f);
+		c->GetVertices(5) = sf::Vector2f(0.0f, 50.0f);
+		c->SetPosition(sf::Vector2f(400.0f, 400.0f));
+		m_Colliders.push_back(c);
+	}
+	
 }

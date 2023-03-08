@@ -9,7 +9,9 @@ public:
 
 	static Collision Instance;
 
-	bool isCollide(const CustomCollider& body, const CustomCollider& other);
-	bool SATCollision(const CustomCollider& body, const CustomCollider& other, sf::Vector2f& MTV);
+	bool SATCollision(const Collider& body, const Collider& other, sf::Vector2f& MPV);
+	bool SATCollision(const Collider& body, const CircleCollider& other, sf::Vector2f& MPV);
+	bool SATCollision(const CircleCollider& body, const Collider& other, sf::Vector2f& MPV);
+	bool SATCollision(const CircleCollider& body, const CircleCollider& other, sf::Vector2f& MPV);
 private:
 };

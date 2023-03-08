@@ -52,19 +52,34 @@ private:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
-
-class CustomCollider: public sf::ConvexShape {
+class CircleCollider : public Collider {
 public:
-	CustomCollider();
-	~CustomCollider();
+	CircleCollider();
+	~CircleCollider();
 
-	//sf::Vector2f getVertices();
+	void Create(float radius);
 
-	void setColliderPoint(int count, const sf::Vector2f& vertex);
-
+	float GetRadius() const;
 
 private:
-	std::vector<sf::Vector2f> m_vertices;
+	float m_radius = 0.0f;
 
-	friend class Collision;
+	virtual void draw(sf::RenderTarget& target, const sf::RenderStates states) const override;
+};
+
+class CustomCollider : public Collider {
+public:
+	CustomCollider();
+	CustomCollider(uint32_t count);
+	~CustomCollider();
+
+	sf::Vector2f* GetVertices();
+	sf::Vector2f& GetVertices(uint32_t index);
+
+	void Create(uint32_t count);
+
+	sf::Vector2f& operator[](uint32_t index);
+
+private:
+	virtual void draw(sf::RenderTarget& target, const sf::RenderStates states) const override;
 };

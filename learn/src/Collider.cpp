@@ -25,8 +25,7 @@ void Collider::SetPosition(sf::Vector2f position) {
 	sf::Vector2f diff = position - m_position - m_origin;
 
 	for (uint32_t i = 0; i < m_verticesCount; i++) {
-		auto v = m_vertices[i];
-
+		auto& v = m_vertices[i];
 		v += diff;
 	}
 
@@ -84,7 +83,7 @@ BoxCollider::~BoxCollider() {
 void BoxCollider::Create(sf::Vector2f size) {
 	auto& v = m_vertices;
 
-	sf::Vector2f pos = m_position - m_origin;
+	sf::Vector2f pos = m_position;
 
 	v[0] = pos + sf::Vector2f(0.0f, 0.0f);
 	v[1] = pos + sf::Vector2f(size.x, 0.0f);
@@ -92,19 +91,65 @@ void BoxCollider::Create(sf::Vector2f size) {
 	v[3] = pos + sf::Vector2f(0.0f, size.y);
 }
 
-void BoxCollider::draw(sf::RenderTarget & target, sf::RenderStates states) const {
-	static sf::Vertex v[6];
+void BoxCollider::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	static sf::Vertex v[5];
 
 	for (int i = 0; i < 4; i++)
 		v[i] = sf::Vertex(m_vertices[i], ColliderColor);
 	 
 	v[4] = sf::Vertex(m_vertices[0], ColliderColor);
-	v[5] = sf::Vertex(m_vertices[2], ColliderColor);
+	//v[5] = sf::Vertex(m_vertices[2], ColliderColor);
 
-	target.draw(v, 6, sf::LineStrip);
+	target.draw(v, 5, sf::LineStrip);
 }
 
-CustomCollider::CustomCollider() {
+CircleCollider::CircleCollider()
+	: Collider(0)
+{
+
+}
+
+CircleCollider::~CircleCollider() {
+
+}
+
+void CircleCollider::Create(float radius) {
+	m_radius = radius;
+}
+
+float CircleCollider::GetRadius() const {
+	return m_radius;
+}
+
+void CircleCollider::draw(sf::RenderTarget& target, const sf::RenderStates states) const {
+	constexpr uint32_t points = 32;
+
+	if (m_radius <= 0.0f)
+		return;
+
+	float angle = 2 * 180.0f / (float)points;
+
+	sf::Vector2f p = m_position;
+	p.y += m_radius;
+
+	static sf::Vertex v[points + 1];
+
+	for (uint32_t i = 0; i <= points; i++)
+		v[i] = sf::Vertex(::Rotate(p, m_position, angle * (float)i), ColliderColor);
+
+	target.draw(v, points + 1, sf::LineStrip);
+	//target.draw(&sf::Vertex(m_position, ColliderColor), 1, sf::Points);
+}
+
+CustomCollider::CustomCollider()
+	:Collider(0)
+{
+
+}
+
+CustomCollider::CustomCollider(uint32_t count)
+	: Collider(count)
+{
 
 }
 
@@ -112,7 +157,37 @@ CustomCollider::~CustomCollider() {
 
 }
 
-void CustomCollider::setColliderPoint(int count, const sf::Vector2f& vertex) {
-	this->setPoint(count, vertex);
-	m_vertices.push_back(vertex);
+sf::Vector2f* CustomCollider::GetVertices() {
+	return m_vertices;
+}
+
+sf::Vector2f& CustomCollider::GetVertices(uint32_t index) {
+	return m_vertices[index];
+}
+
+void CustomCollider::Create(uint32_t count) {
+	delete[] m_vertices;
+
+	m_vertices = new sf::Vector2f[count];
+
+	m_verticesCount = count;
+}
+
+sf::Vector2f& CustomCollider::operator[](uint32_t index) {
+	return m_vertices[index];
+}
+
+void CustomCollider::draw(sf::RenderTarget& target, const sf::RenderStates states) const {
+	const uint32_t count = m_verticesCount + 1;
+
+	sf::Vertex* v = new sf::Vertex[count];
+
+	for (uint32_t i = 0; i < count - 1; i++)
+		v[i] = sf::Vertex(m_vertices[i], ColliderColor);
+
+	v[count - 1] = sf::Vertex(m_vertices[0], ColliderColor);
+
+	target.draw(v, count, sf::LineStrip);
+
+	delete[] v;
 }

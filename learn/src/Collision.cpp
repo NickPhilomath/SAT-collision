@@ -1,45 +1,79 @@
 #include "stpch.h"
 #include "Collision.hpp"
 
-bool isPointToLinePositive(sf::Vector2f point, sf::Vector2f line1, sf::Vector2f line2) {
-    float h = line2.y - line1.y, s = line2.x - line1.x;
-    return ((s * (point.y - line1.y) - h * (point.x - line1.x)) / sqrt(s * s + h * h)) >= 0;
-}
-
-sf::Vector2f getGlobalCoors(sf::Vector2f localCoors, sf::Vector2f position, float rotation) {
-    float sinA = sin(rotation * DEG2RAD), cosA = cos(rotation * DEG2RAD);
-    sf::Vector2f l(localCoors.x * cosA - localCoors.y * sinA, localCoors.y * cosA + localCoors.x * sinA);
-    return position + l;
-}
-
 Collision Collision::Instance;
 
-bool Collision::isCollide(const CustomCollider& body, const CustomCollider& other) {
-    bool last = false;
-    auto endline = body.m_vertices.end();
-    for (auto it1 = body.m_vertices.begin(); it1 != body.m_vertices.end(); it1++) {
-        for (auto it2 = other.m_vertices.begin(); it2 != other.m_vertices.end(); it2++) {
-            last = false;
-            endline = (it1 == body.m_vertices.end() - 1) ? body.m_vertices.begin() : endline = it1 + 1;
-            if (isPointToLinePositive(
-                getGlobalCoors(*it2, other.getPosition(), other.getRotation()),
-                getGlobalCoors(*it1, body.getPosition(), body.getRotation()),
-                getGlobalCoors(*(endline), body.getPosition(), body.getRotation())
-            )) {
-                last = true;
+bool Collision::SATCollision(const Collider& body, const Collider& other, sf::Vector2f& MPV) {
+    uint32_t bodyCount = body.m_verticesCount;
+    uint32_t otherCount = other.m_verticesCount;
+
+    // filter if colliders are circles
+    if (bodyCount + otherCount == 0) // if both colliders are circles
+        return SATCollision((const CircleCollider&)body, (const CircleCollider&)other, MPV);
+    else if (bodyCount == 0) // if first collider is circle
+        return SATCollision((const CircleCollider&)body, other, MPV);
+    else if (otherCount == 0) // if second collider is circle
+        return SATCollision(body, (const CircleCollider&)other, MPV);
+
+    // check collider to collider SATCollision
+    bool allPointsPositive = true;
+    sf::Vector2f* bodyVertices = body.m_vertices;
+    sf::Vector2f* otherVertices = other.m_vertices;
+    sf::Vector2f endPoint;
+
+    // check first collider to second 
+    for (uint32_t i = 0; i < bodyCount; i++) {
+        endPoint = (i == bodyCount - 1) ? bodyVertices[0] : bodyVertices[i + 1];
+        for (uint32_t j = 0; j < otherCount; j++) {
+            allPointsPositive = true;
+            //Print(i, "&", j, ": point ", posPoint.x, "&", posPoint.y, " l1 ", posL1.x, "&", posL1.y, " l2 ", posL2.x, "&", posL2.y, " ", PointToLine(otherVertices[j], bodyVertices[i], endPoint), " \n");
+            if (PointToLine(otherVertices[j], bodyVertices[i], endPoint) <= 0) {
+                allPointsPositive = false;
                 break;
             }
         }
-        if (!last) return false;
+        if (allPointsPositive) return false;
     }
+    // check second collider to first
+    for (uint32_t i = 0; i < otherCount; i++) {
+        endPoint = (i == otherCount - 1) ? otherVertices[0] : otherVertices[i + 1];
+        for (uint32_t j = 0; j < bodyCount; j++) {
+            allPointsPositive = true;
+            if (PointToLine(bodyVertices[j], otherVertices[i], endPoint) <= 0) {
+                allPointsPositive = false;
+                break;
+            }
+        }
+        if (allPointsPositive) return false;
+    }
+
     return true;
 }
 
-bool Collision::SATCollision(const CustomCollider& body, const CustomCollider& other, sf::Vector2f& MTV) {
-    return isCollide(body, other) && isCollide(other, body);
-    //return !(!isCollide(body, other) || !isCollide(other, body));
+bool Collision::SATCollision(const Collider& body, const CircleCollider& other, sf::Vector2f& MPV) {
+    uint32_t colliderCount = body.m_verticesCount;
+    sf::Vector2f* colliderVers = body.m_vertices;
+    sf::Vector2f circlePos = other.GetPosition();
+    sf::Vector2f endPoint;
+    float circleRad = other.GetRadius();
+
+    for (uint32_t i = 0; i < colliderCount; i++) {
+        if (Distance(colliderVers[i], circlePos) - circleRad <= 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
+bool Collision::SATCollision(const CircleCollider& body, const Collider& other, sf::Vector2f& MPV) {
+
+    return SATCollision(other, body, MPV);
+}
+
+bool Collision::SATCollision(const CircleCollider& body, const CircleCollider& other, sf::Vector2f& MPV) {
+
+    return false;
+}
 
 Collision::Collision() {
 
